@@ -5,15 +5,15 @@ module Netzke
     class GroupExplorer < Netzke::Basepack::FormPanel
       js_property :prevent_header, true
 
-      def configuration
-        group_config = {} if ! group_config
-        item_config = {} if ! item_config
+      def js_config
+        group_config = configuration[:group_config] ? configuration[:group_config] : {}
+        item_config = configuration[:item_config] ? configuration[:item_config] : {}
         groups = []
-        grp = 0; records.each do |c|
-          if get_relation.call(c).id != grp
+        grp = 0; configuration[:get_records].call.each do |c|
+          if configuration[:get_relation].call(c).id != grp
             @mymodel_group = {
               :xtype => 'checkboxgroup',
-              :fieldLabel => get_relation.call(c).to_s + " " + get_relation.call(c).activities.count.to_s,
+              :fieldLabel => configuration[:get_relation].call(c).to_s + " " + configuration[:get_relation].call(c).activities.count.to_s,
               :cls => (grp % 2) == 0  ? 'x-check-group-alt' : '' ,
               :columns => 7,
               :items => []
@@ -21,13 +21,13 @@ module Netzke
             groups << @mymodel_group
           end
           @mymodel_group[:items] << {
-             boxLabel: c.to_s, 
-             name: "records", 
-             input_value: c.id, 
-             :field_label => "", 
-             :xtype => 'checkbox'
+            boxLabel: c.to_s, 
+            name: "records", 
+            input_value: c.id, 
+            :field_label => "", 
+            :xtype => 'checkbox'
           }.merge(item_config)
-          grp = get_relation.call(c).id
+          grp = configuration[:get_relation].call(c).id
         end
         super.merge(:items => groups)
       end
