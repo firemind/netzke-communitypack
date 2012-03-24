@@ -10,23 +10,23 @@ module Netzke
         group_config = configuration[:group_config] ? configuration[:group_config] : {}
         selected_ids = configuration[:selected_ids].call(the_record)
         items = configuration[:get_members].call.collect { |m|
-            {
-              boxLabel: m.to_s, 
-              name: "records", 
-              input_value: m.id, 
-              checked: selected_ids.include?(m.id),
-              :field_label => "", 
-              :xtype => 'checkbox'
+          {
+            boxLabel: m.to_s, 
+            name: "records", 
+            input_value: m.id, 
+            checked: selected_ids.include?(m.id),
+            :field_label => "", 
+            :xtype => 'checkbox'
           }.merge(item_config)
         }
         items << { xtype: 'hidden', name: 'record_id', value: configuration[:record_id].to_i }
         super.merge(:items => [{
-            :xtype => 'checkboxgroup',
-            :fieldLabel => "",
-            :columns => 7,
-            :items => items
-          }.merge(group_config)]
-        )
+          :xtype => 'checkboxgroup',
+          :fieldLabel => "",
+          :columns => 7,
+          :items => items
+        }.merge(group_config)]
+                   )
       end
 
       # TO DO
@@ -57,6 +57,25 @@ module Netzke
           end
           {:netzke_feedback => @flash, :apply_form_errors => build_form_errors(record)}
         end
+      end
+
+      def self.on_action_config(component)
+        return <<-JS
+          function(e){
+            var selModel = this.getSelectionModel();
+            var recordId = selModel.selected.first().getId();
+            this.loadNetzkeComponent({name: "#{component}",
+              params: {record_id: recordId},
+              callback: function(w){
+                w.show();
+                w.on('close', function(){
+                  if (w.closeRes === "ok") {
+                    this.store.load();
+                  }
+                }, this);
+              }, scope: this});
+          }
+        JS
       end
 
     end
