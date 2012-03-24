@@ -77,6 +77,10 @@ module Netzke
           }
         JS
       end
+      
+      def self.transfer_record_id(component_name, params, components)
+        components[component_name.to_sym][:items].first.merge!(:record_id => params[:record_id].to_i) if params[:name] == component_name.to_s 
+      end
 
     end
 
