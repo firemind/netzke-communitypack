@@ -2,12 +2,12 @@ module Netzke
   module Communitypack
     # A component based on Ext.chart.Chart
     # 
-    # Used as base for Pie Charts, Bar Charts, etc.
+    # Implementation of Ext JS Bar Charts http://dev.sencha.com/deploy/ext-4.1.0-gpl/examples/charts/Bar.html
+    # For configuration see Netzke::Comunitypack::Chart
     class ColumnChart < Chart
 
       def configuration
-        sup = super
-        sup.merge(
+        {
           :store => 'chartDataStore',
           :animate => true,
           :axes => [{
@@ -29,7 +29,7 @@ module Netzke
           :xField => 'categoryField',
           :yField => 'dataField'
         }]
-        )
+        }.deep_merge(super)
       end
 
     end
