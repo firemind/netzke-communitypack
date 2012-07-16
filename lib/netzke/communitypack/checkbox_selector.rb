@@ -1,7 +1,15 @@
 module Netzke
   module Communitypack
-    # A component based on XXX with the following features:
+    # A component to manage one-to-many or many-to-many associations by displaying groupable Checkboxes
     # 
+    # Accepts the following config options:
+    # * record_id - id of record to be edited
+    # * record_model - model of record to be edited
+    # * selected_ids - lambda function expected to return ids of records to be checked by default
+    # * get_members -  lambda function expected to return collection of records to display as checkboxes (record must implement to_s and id)
+    # * item_config (optional) - hash of options passed to extjs checkbox element
+    # * group_config (optional) -  hash of options passed to extjs checkboxgroup element
+    # * toggle_all (optional) - set to true to display buttons for checking and unchecking all checkboxes
     class CheckboxSelector < Netzke::Basepack::FormPanel
       js_property :prevent_header, true
 
@@ -19,13 +27,42 @@ module Netzke
             :xtype => 'checkbox'
           }.merge(item_config)
         }
-        items << { xtype: 'hidden', name: 'record_id', value: configuration[:record_id].to_i }
+        if configuration[:toggle_all] && configuration[:toggle_all] == true
+          items << {
+            xtype: 'button',
+            text: 'Alle ausw&auml;hlen',
+            handler: "function(btn) {
+      boxes = btn.up('checkboxgroup').items.items;
+      Ext.each(boxes,
+        function(c, index, itemsThemselves) {
+          if (Ext.getCmp(c.id) && Ext.getCmp(c.id).setValue) {
+            Ext.getCmp(c.id).setValue('true');
+          }
+        })
+      }".l
+          }
+          items << {
+            xtype: 'button',
+            text: 'Alle abw&auml;hlen',
+            handler: "function(btn) {
+      boxes = btn.up('checkboxgroup').items.items;
+      Ext.each(boxes,
+        function(c, index, itemsThemselves) {
+          if (Ext.getCmp(c.id) && Ext.getCmp(c.id).setValue) {
+            Ext.getCmp(c.id).setValue('false');
+          }
+        })
+      }".l
+          }
+        end
         super.merge(:items => [{
           :xtype => 'checkboxgroup',
           :fieldLabel => "",
           :columns => 7,
           :items => items
-        }.merge(group_config)]
+        }.merge(group_config),
+        { xtype: 'hidden', name: 'record_id', value: configuration[:record_id].to_i }
+        ]
                    )
       end
 
@@ -77,7 +114,7 @@ module Netzke
           }
         JS
       end
-      
+
       def self.transfer_record_id(component_name, params, components)
         components[component_name.to_sym][:items].first.merge!(:record_id => params[:record_id].to_i) if params[:name] == component_name.to_s 
       end

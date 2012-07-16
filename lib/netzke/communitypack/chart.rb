@@ -3,11 +3,14 @@ module Netzke
     # A component based on Ext.chart.Chart
     # 
     # Used as base for Pie Charts, Bar Charts, etc.
+    #
+    # Accepts the following config options:
+    # * chart_data - lambda function expected to return 2-dimensional array containing chart data. e.g. [['label 1', 5],['label 2', 42]]
     class Chart < Base
       js_base_class "Ext.chart.Chart"
 
       endpoint :load_store do |params|
-        res = self.chart_data
+        res = configuration[:chart_data].call
         res = [] if ! res
         res.delete_if{|r| r[1] == 0 }
         {:set_result =>  res.to_json }
@@ -23,7 +26,6 @@ module Netzke
           }else{
             this.store.loadData(res);
           }
-          //this.store.loadData([["Peter Bosshard",5],["Heinrich Fischer",3]]);
         });
       } 
       JS
@@ -41,8 +43,8 @@ module Netzke
         this.store = new Ext.data.Store({
           model: 'ChartData'
         });
-        this.updateChart();
         this.callParent();
+        this.updateChart();
       }
       JS
 
