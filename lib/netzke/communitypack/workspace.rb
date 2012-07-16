@@ -28,7 +28,7 @@ module Netzke
               :title => tab[:title],
               :closable => i > 0, # all closable except first
               :netzke_component_id => tab[:name],
-              :items => !components[tab[:name].to_sym][:lazy_loading] && [tab[:name].to_sym.component]
+              :items => !components[tab[:name].to_sym][:lazy_loading] && [tab[:name].to_sym.component()]
             }
           end
         end
@@ -43,7 +43,7 @@ module Netzke
 
       # Overriding this to allow for dynamically declared components
       def components
-        stored_tabs.inject({}){ |r,tab| r.merge(tab[:name].to_sym => tab.reverse_merge(:prevent_header => true, :lazy_loading => true, :border => false)) }.merge(:cmp0 => dashboard_config)
+        stored_tabs.inject({}){ |r,tab| r.merge(tab[:name].to_sym => tab.reverse_merge(:prevent_header => true, :lazy_loading => true, :border => false, :persistence_key => tab[:class_name])) }.merge(:cmp0 => dashboard_config)
       end
 
       # Overriding the deliver_component endpoint, to dynamically add tabs and replace components in existing tabs
@@ -55,7 +55,7 @@ module Netzke
           current_tabs = stored_tabs
 
           # we need to instantiate the newly added child to get access to its title
-          cmp_class = constantize_class_name(params[:component])
+          cmp_class = constantize_class_name(params[:component].camelcase)
           raise RuntimeError, "Could not find class #{params[:component]}" if cmp_class.nil?
 
           cmp_config = {:name => params[:name], :class_name => cmp_class.name}.merge(params[:config] || {}).symbolize_keys
