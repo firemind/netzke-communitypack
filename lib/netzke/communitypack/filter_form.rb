@@ -30,7 +30,11 @@ module Netzke
       # parent component's component_session[:filtered_ids]
       endpoint :apply_filters do |params|
         self.class.read_inheritable_attribute(:filters).each { |name,filter|
-          @ids = filter.call(params[:filter_values]).collect{ |r| r.id }
+          if @ids
+            @ids = @ids & filter.call(params[:filter_values]).collect{ |r| r.id }
+          else
+            @ids = filter.call(params[:filter_values]).collect{ |r| r.id }
+          end
         }
         @filter_panel.component_session[:filtered_ids] = @ids
         {:set_result => "success" }
