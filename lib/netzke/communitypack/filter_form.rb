@@ -11,6 +11,7 @@ module Netzke
     #    	   }
     #       end
     class FilterForm < Netzke::Basepack::FormPanel
+      class_attribute :filters
 
       # override to save the parent component as instance veriable
       def initialize(a,parent)
@@ -29,7 +30,7 @@ module Netzke
       # iterate over and call all filter functions and save the resulting ids in the
       # parent component's component_session[:filtered_ids]
       endpoint :apply_filters do |params|
-        self.class.read_inheritable_attribute(:filters).each { |name,filter|
+        self.class.filters.each { |name,filter|
           if @ids
             @ids = @ids & filter.call(params[:filter_values]).collect{ |r| r.id }
           else
@@ -59,9 +60,9 @@ module Netzke
       JS
 
       def self.filter(name, filter_func)
-        current_filters = read_inheritable_attribute(:filters) || {}
+        current_filters = self.filters || {}
         current_filters.merge!(name => filter_func)
-        write_inheritable_attribute(:filters, current_filters)
+        self.filters= current_filters
       end 
 
     end
