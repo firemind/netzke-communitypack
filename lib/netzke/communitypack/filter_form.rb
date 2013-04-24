@@ -21,9 +21,8 @@ module Netzke
 
       js_method :on_apply, <<-JS
     function(){
-      this.applyFilters({filter_values: this.getValues()}, function(res){ 
-        this.fireEvent("filter_applied");
-      });
+      this.applyFilters({filter_values: this.getValues()});
+      this.fireEvent("filter_applied");
     }
       JS
 
